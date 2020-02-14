@@ -1,0 +1,62 @@
+template <class T>
+class FenwickTree {
+public:
+    inline int f(int i)
+    {
+        return i & (i + 1);
+    }
+
+    inline int h(int i)
+    {
+        return i | (i + 1);
+    }
+
+    explicit FenwickTree(const vector<T>& array)
+    {
+        assert(array.size() > 0);
+        vector<T> prefix(array.size());
+        prefix[0] = array[0];
+        for (int i = 1; i < array.size(); i++)
+        {
+            prefix[i] = prefix[i - 1] + array[i];
+        }
+        fen.resize(array.size());
+        for (int i = 0; i < array.size(); i++)
+        {
+            fen[i] = prefix[i] - ((f(i) == 0) ? 0 : prefix[f(i) - 1]);
+        }
+    }
+
+    T get(int x)
+    {
+        T res = 0;
+        while (x >= 0)
+        {
+            res += fen[x];
+            x = f(x) - 1;
+        }
+        return res;
+    }
+
+    T getSum(int left, int right)
+    {
+        return (left == 0) ? get(right) : get(right) - get(left - 1);
+    }
+
+    void add(int i, T val)
+    {
+        while (i < fen.size())
+        {
+            fen[i] += val;
+            i = h(i);
+        }
+    }
+
+    void modify(int i, T val)
+    {
+        add(i, val - (get(i) - get(i - 1)));
+    }
+
+private:
+    vector<T> fen;
+};
