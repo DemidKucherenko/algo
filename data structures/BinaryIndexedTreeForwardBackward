@@ -1,0 +1,83 @@
+template <class T>
+class FenwickTree {
+public:
+    inline int f(int i)
+    {
+        return i & (i + 1);
+    }
+
+    inline int h(int i)
+    {
+        return i | (i + 1);
+    }
+
+    explicit FenwickTree(const vector<T>& array)
+    {
+        assert(array.size() > 0);
+        vector<T> prefix(array.size());
+        prefix[0] = array[0];
+        for (int i = 1; i < array.size(); i++)
+        {
+            prefix[i] = prefix[i - 1] + array[i];
+        }
+        forw.resize(array.size());
+        back.resize(array.size());
+        for (int i = 0; i < array.size(); i++)
+        {
+            forw[i] = prefix[i] - ((f(i) == 0) ? 0 : prefix[f(i) - 1]);
+            back[i] = prefix[min(h(i), (int)array.size() - 1)] - prefix[i];
+        }
+    }
+
+    T get(int x)
+    {
+        T res = 0;
+        while (x >= 0)
+        {
+            res += forw[x];
+            x = f(x) - 1;
+        }
+        return res;
+    }
+
+    T getSum(int left, int right)
+    {
+        T res = 0;
+        while (right >= 0 && f(right) >= left)
+        {
+            res += forw[right];
+            right = f(right) - 1;
+        }
+        while (right >= left && h(left - 1) <= right)
+        {
+            res += back[left - 1];
+            left = h(left - 1) + 1;
+        }
+        assert(left == right + 1);
+        return res;
+    }
+
+    void add(int i, T val)
+    {
+        int j = i - 1;
+        while (i < forw.size())
+        {
+            forw[i] += val;
+            i = h(i);
+        }
+        while (j >= 0)
+        {
+            back[j] += val;
+            j = f(j) - 1;
+        }
+    }
+
+    void modify(int i, T val)
+    {
+        add(i, val - (get(i) - get(i - 1)));
+    }
+
+private:
+    vector<T> forw;
+    vector<T> back;
+};
